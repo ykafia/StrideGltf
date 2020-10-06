@@ -10,8 +10,8 @@ Hierarchy:
         - ref!! a483ac4e-8859-4f66-9220-635288aabcab
         - ref!! 0f3848af-6033-437b-a2a6-a5111ef0fcc8
         - ref!! b26a0e2a-f6e7-48bb-825d-9e33c47b685a
-        - ref!! f7cd5a48-439a-4277-8e7e-61688e9a912c
         - ref!! 888cc5d5-67ae-494e-84a0-a6fe8b3c22d6
+        - ref!! 32a844e5-c95d-4ecd-bf6e-ea8f3d55c077
     Parts:
         -   Entity:
                 Id: 0f3848af-6033-437b-a2a6-a5111ef0fcc8
@@ -31,13 +31,28 @@ Hierarchy:
                         Type: !LightSkybox
                             Skybox: 92b4c0c9-e9fd-47e0-97cc-77af23e86976:Skybox
         -   Entity:
+                Id: 32a844e5-c95d-4ecd-bf6e-ea8f3d55c077
+                Name: Cube
+                Components:
+                    b0a013bdf3303bfd7048f1a5764f6214: !TransformComponent
+                        Id: 711d227e-cd22-4299-a896-8ad149e6f5c7
+                        Position: {X: 0.424680471, Y: 0.479427725, Z: -0.00461006165}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    87d1cef0a564c960869c3d4156f1e21a: !ModelComponent
+                        Id: 98290ff4-f662-4aaa-b4e8-d535ee280d92
+                        Model: bd7a90dc-90df-4f6f-83b4-a2a23e48906a:Cube
+                        Materials:
+                            2eac3613d6ca9056f8e778818d53e233~0: 78210e4c-5a0d-423f-bfa5-0e236c9a38bc:Sphere Material
+        -   Entity:
                 Id: 888cc5d5-67ae-494e-84a0-a6fe8b3c22d6
                 Name: fish
                 Components:
                     591073106aca700920ac79f27fe2794d: !TransformComponent
                         Id: 74f619ae-de3d-44b7-a78d-ed8713c035d2
                         Position: {X: 0.0, Y: 2.0, Z: 0.0}
-                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Rotation: {X: 0.0, Y: 0.829037547, Z: 0.0, W: 0.5591929}
                         Scale: {X: 1.0, Y: 1.0, Z: 1.0}
                         Children: {}
                     dae32601a4e1ca9ac51491b39e4ef74a: !GltfImport.LoadGLTF,GltfImport
@@ -83,26 +98,12 @@ Hierarchy:
                         Model: 1156345c-0d8f-4e5b-9591-f68f27ce84e6:Ground
                         Materials: {}
         -   Entity:
-                Id: f7cd5a48-439a-4277-8e7e-61688e9a912c
-                Name: Sphere
-                Components:
-                    22453e7447943c2a4ebe6e289ad6507a: !TransformComponent
-                        Id: 2c639a31-69eb-40f6-a1be-200f11921806
-                        Position: {X: 0.0, Y: 0.5, Z: 0.0}
-                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
-                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
-                        Children: {}
-                    b541dd1049a3456d2889b6af652949d8: !ModelComponent
-                        Id: 61f5e62b-9ebf-49b8-9fcf-e70957f79f5a
-                        Model: 6ace1855-beb1-4ad0-bf1e-0776a5b2bc85:Sphere
-                        Materials: {}
-        -   Entity:
                 Id: fa823cf8-f6a5-4c59-a89d-abb45617716f
                 Name: Camera
                 Components:
                     d3e490415ccc131900ea636fd94d041e: !TransformComponent
                         Id: 479e33f9-02ee-4f08-abd9-ac9a35b3007f
-                        Position: {X: 2.6, Y: 2.6, Z: -1.0}
+                        Position: {X: 2.6, Y: 2.6, Z: -2.0}
                         Rotation: {X: 0.0, Y: 0.829037547, Z: 0.0, W: 0.5591929}
                         Scale: {X: 1.0, Y: 1.0, Z: 1.0}
                         Children: {}

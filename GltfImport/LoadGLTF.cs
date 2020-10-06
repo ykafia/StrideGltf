@@ -11,22 +11,30 @@ using Stride.Core.Assets;
 using Stride.Core.IO;
 using Stride.Graphics;
 using StrideBuffer = Stride.Graphics.Buffer;
+using Stride.Core.Diagnostics;
 
 namespace GltfImport
 {
     public class LoadGLTF : StartupScript
     {
         // Declared public member fields and properties will show in the game studio
-        public string Path{get;set;}
+        public string Path { get; set; }
         public override void Start()
         {
-            var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/cube/AnimatedCube.gltf");
+            Log.ActivateLog(LogMessageType.Info);
+            // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/cube/AnimatedCube.gltf");
+            var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/fox/Fox.gltf");
+            // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/icosphere/icosphere.gltf");
+            // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/torus/torus.gltf");
+
             var modelLoader = new GLTFMeshParser
             {
                 Device = this.GraphicsDevice,
-                AssetMesh = fox_glb.LogicalMeshes[0]
+                GltfRoot = fox_glb,
+                Logger = Log
             };
-            Entity.Add(new ModelComponent(modelLoader.GetModel()));
+            Entity.Add(new ModelComponent(modelLoader.GetModel(0)));
+            Log.Info("Model Loaded");
         }
 
     }

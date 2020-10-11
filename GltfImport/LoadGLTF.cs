@@ -15,7 +15,7 @@ using Stride.Core.Diagnostics;
 
 namespace GltfImport
 {
-    public class LoadGLTF : StartupScript
+    public class LoadGLTF : SyncScript
     {
         // Declared public member fields and properties will show in the game studio
         public string Path { get; set; }
@@ -37,5 +37,9 @@ namespace GltfImport
             Log.Info("Model Loaded");
         }
 
+        public override void Update()
+        {
+            var model = Entity.Get<ModelComponent>();
+        }
     }
 }

@@ -1,8 +1,6 @@
 
 using System;
 using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.Linq;
 using Stride.Core.Mathematics;
@@ -51,7 +49,7 @@ namespace GltfImport
                 Logger.Info("Index of material is : " + model.Materials.IndexOf(material));
                 mesh.MaterialIndex = model.Materials.IndexOf(material);
                 model.Add(mesh);
-
+                model.Skeleton = GetSkeleton();
             }
             return model;
         }
@@ -149,7 +147,6 @@ namespace GltfImport
             else
                 return VertexType.VertexPositionTexture;
         }
-
         public IVertex[] GetVertexBuffer(int primitiveID)
         {
             var result = new List<IVertex>();
@@ -182,24 +179,11 @@ namespace GltfImport
         }
         public UInt32[] GetIndices(int primitiveID)
         {
-            // return CurrentMesh.Primitives[primitiveID].GetIndices().ToArray();
             var prim = CurrentMesh.Primitives[primitiveID];
-            // var result = new List<uint>();
-            if (prim.GetIndices() != null)
-                // return prim.GetIndices().ToArray();
-            {
-                var result = new List<uint>();
-                prim.GetTriangleIndices().ToList().ForEach(x => {result.Add((uint)x.A);result.Add((uint)x.C);result.Add((uint)x.B);});
-                return result.ToArray();
-                // return Enumerable.Range(0, prim.GetVertices("POSITION").AsVector3Array().Count -1).Select(x=>(uint)x).ToArray();
-            }
-            else
-            {
-                var result = new List<uint>();
-                prim.GetTriangleIndices().ToList().ForEach(x => {result.Add((uint)x.A);result.Add((uint)x.B);result.Add((uint)x.C);});
-                return result.ToArray();
-                // return Enumerable.Range(0, prim.GetVertices("POSITION").AsVector3Array().Count -1).Select(x=>(uint)x).ToArray();
-            }
+
+            var result = new List<uint>();
+            prim.GetTriangleIndices().ToList().ForEach(x => { result.Add((uint)x.A); result.Add((uint)x.C); result.Add((uint)x.B); });
+            return result.ToArray();
         }
 
         public int GetTriIndicesCount(int primitiveID)
@@ -244,20 +228,53 @@ namespace GltfImport
         //         _ => Stride.Graphics.PrimitiveType.Undefined,
         //     };
         // }
+
+        public Skeleton GetSkeleton()
+        {
+            var foxSkin = GltfRoot.LogicalNodes.First(x => x.Mesh == CurrentMesh).Skin;
+            var sk = new Skeleton();
+            var nodes = new List<ModelNodeDefinition>();
+            var glnodes = new List<SharpGLTF.Schema2.Node>();
+
+            for (int i = 0; i < foxSkin.JointsCount; i++)
+            {
+                glnodes.Add(foxSkin.GetJoint(i).Joint);
+            }
+            glnodes.ForEach(
+                     x => nodes.Add(
+                     new ModelNodeDefinition
+                     {
+                         Flags = ModelNodeFlags.Default,
+                         ParentIndex = GetParentNodeIndex(glnodes,x),
+                         Transform =
+                                 new TransformTRS
+                                 {
+                                     Position = ToStridePosition(x.LocalTransform),
+                                     Rotation = ToStrideRotation(x.LocalTransform)
+                                 },
+                         Name = x.Name
+                     })
+                 );
+            sk.Nodes = nodes.ToArray();
+            return sk;
+        }
+        private int GetParentNodeIndex(List<SharpGLTF.Schema2.Node> glnodes, SharpGLTF.Schema2.Node current ) 
+        {
+            try
+            {
+                return glnodes.IndexOf(glnodes.First(y => y.Name == current.VisualParent.Name));
+            }
+            catch(Exception)
+            {
+                return -1;
+            }
+        }
         private Vector3 ToStrideVector3(System.Numerics.Vector3 a) => new Vector3(a.X, a.Y, a.Z);
         private Vector2 ToStrideVector2(System.Numerics.Vector2 a) => new Vector2(a.X, a.Y);
         private VertexPositionNormalTexture[] AsVPNT(IVertex[] v) => v.Select(x => (VertexPositionNormalTexture)x).ToArray();
         private VertexPositionTexture[] AsVPT(IVertex[] v) => v.Select(x => (VertexPositionTexture)x).ToArray();
+        public Vector3 ToStridePosition(SharpGLTF.Transforms.AffineTransform tr) => new Vector3(tr.Translation.X, tr.Translation.Y, tr.Translation.Z);
+        public Quaternion ToStrideRotation(SharpGLTF.Transforms.AffineTransform tr) => new Quaternion(tr.Rotation.X, tr.Rotation.Y, tr.Rotation.Z, tr.Rotation.W);
 
-        public void LoadTextures()
-        {
-            GltfRoot
-                .LogicalImages
-                .Select(x => x.Content.SourcePath)
-                .Select(path => new FileStream(path, FileMode.Open))
-                .Select(stream => Stride.Graphics.Image.Load(stream, true))
-                .Select(image => Texture.New(Device, image, TextureFlags.DepthStencil));
-        }
     }
-
 }

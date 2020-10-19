@@ -9,6 +9,11 @@ using Stride.Graphics;
 using Stride.Rendering.Materials;
 using Stride.Rendering.Materials.ComputeColors;
 using Stride.Core.Diagnostics;
+using Stride.Core.Extensions;
+using Stride.Core.Shaders.Ast;
+using Stride.Shaders.Parser.Mixins;
+using Stride.Core;
+using Stride.Core.Collections;
 
 namespace GltfImport
 {
@@ -45,11 +50,26 @@ namespace GltfImport
                 // };
                 var material = Material.New(Device, matDesc);
                 model.Add(material);
+                //var pc = new ParameterCollection();
+                //var p1 = new ParameterKeyInfo(new ObjectParameterKey<bool>("Material.HasSkinningPosition",1,Array.Empty<PropertyKeyMetadata>()),0,
+                //pc.ParameterKeyInfos.Add(p);
+
+
+                
+                
                 var mesh = new Mesh { Draw = GetMeshDraw(i) };
+                //var pc = new ParameterCollection { ParameterKeyInfos = }
+                mesh.Parameters.ObjectValues = new object[] { true, true };
+                //material.Passes.ForEach(x => x.Parameters.Set<bool>(MaterialKeys.HasSkinningPosition, true));
+                //material.Passes.ForEach(x => x.Parameters.Set<bool>(MaterialKeys.HasSkinningNormal, true));
+
+                mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningPosition, true);
+                mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningNormal, true);
+
                 Logger.Info("Index of material is : " + model.Materials.IndexOf(material));
                 mesh.MaterialIndex = model.Materials.IndexOf(material);
                 model.Add(mesh);
-                model.Skeleton = GetSkeleton();
+                model.Skeleton = GetSkeleton(mesh);
             }
             return model;
         }
@@ -79,6 +99,7 @@ namespace GltfImport
                             };
 
                             material.Attributes.Diffuse = new MaterialDiffuseMapFeature(vt);
+                            
                             material.Attributes.DiffuseModel = new MaterialDiffuseLambertModelFeature();
                             Logger.Info("Added diffuse material");
                             break;
@@ -129,6 +150,8 @@ namespace GltfImport
                 GetIndices(primitiveID)
             );
             var primitiveType = GetPrimitiveType(primitiveID);
+
+
             return new MeshDraw
             {
                 PrimitiveType = primitiveType,
@@ -229,33 +252,56 @@ namespace GltfImport
         //     };
         // }
 
-        public Skeleton GetSkeleton()
+        public Skeleton GetSkeleton(Mesh mesh)
         {
             var foxSkin = GltfRoot.LogicalNodes.First(x => x.Mesh == CurrentMesh).Skin;
             var sk = new Skeleton();
             var nodes = new List<ModelNodeDefinition>();
             var glnodes = new List<SharpGLTF.Schema2.Node>();
+            var matNodes = new List<System.Numerics.Matrix4x4>();
 
             for (int i = 0; i < foxSkin.JointsCount; i++)
             {
                 glnodes.Add(foxSkin.GetJoint(i).Joint);
+                matNodes.Add(foxSkin.GetJoint(i).InverseBindMatrix);
+
             }
             glnodes.ForEach(
-                     x => nodes.Add(
-                     new ModelNodeDefinition
+                     x =>
                      {
-                         Flags = ModelNodeFlags.Default,
-                         ParentIndex = GetParentNodeIndex(glnodes,x),
-                         Transform =
-                                 new TransformTRS
-                                 {
-                                     Position = ToStridePosition(x.LocalTransform),
-                                     Rotation = ToStrideRotation(x.LocalTransform)
-                                 },
-                         Name = x.Name
-                     })
+                         Logger.Info(x.LocalTransform.Translation.ToString());
+                         nodes.Add(
+                         new ModelNodeDefinition
+                         {
+                             Flags = ModelNodeFlags.Default,
+                             ParentIndex = GetParentNodeIndex(glnodes, x),
+                             Transform =
+                                     new TransformTRS
+                                     {
+                                         Position = ToStrideVector3(x.WorldMatrix.Translation),
+                                         Rotation = ToStrideRotation(x.LocalTransform)
+                                     },
+                             Name = x.Name
+                         });
+                     }
                  );
+
+            //var mbd = new List<MeshBoneDefinition>();
+            //for(int i = 0; i<matNodes.Count;i++)
+            //{
+            //    var tmp = ToStrideMatrix(matNodes[i]);
+            //    tmp.Transpose();
+            //    mbd.Add(new MeshBoneDefinition
+            //    {
+            //        NodeIndex = i,
+            //        LinkToMeshMatrix = ToStrideMatrix(matNodes[0]) * tmp * Matrix.Identity
+            //    });
+            //}
             sk.Nodes = nodes.ToArray();
+            //mesh.Skinning = new MeshSkinningDefinition
+            //{
+            //    Bones = mbd.ToArray()
+            //};
             return sk;
         }
         private int GetParentNodeIndex(List<SharpGLTF.Schema2.Node> glnodes, SharpGLTF.Schema2.Node current ) 
@@ -275,6 +321,14 @@ namespace GltfImport
         private VertexPositionTexture[] AsVPT(IVertex[] v) => v.Select(x => (VertexPositionTexture)x).ToArray();
         public Vector3 ToStridePosition(SharpGLTF.Transforms.AffineTransform tr) => new Vector3(tr.Translation.X, tr.Translation.Y, tr.Translation.Z);
         public Quaternion ToStrideRotation(SharpGLTF.Transforms.AffineTransform tr) => new Quaternion(tr.Rotation.X, tr.Rotation.Y, tr.Rotation.Z, tr.Rotation.W);
-
+        public Matrix ToStrideMatrix(System.Numerics.Matrix4x4 mat)
+        {
+            return new Matrix(
+                    mat.M11,mat.M12,mat.M13, mat.M14,
+                    mat.M21, mat.M22, mat.M23, mat.M24,
+                    mat.M31, mat.M32, mat.M33, mat.M34,
+                    mat.M41, mat.M42, mat.M43, mat.M44
+                );
+        }
     }
 }

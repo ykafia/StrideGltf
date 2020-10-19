@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Stride.Core.Mathematics;
 using Stride.Input;
 using Stride.Engine;
-using Stride.Rendering;
-using Stride.Core.Assets;
-using Stride.Core.IO;
-using Stride.Graphics;
-using StrideBuffer = Stride.Graphics.Buffer;
 using Stride.Core.Diagnostics;
+using Stride.Shaders.Parser.Mixins;
 
 namespace GltfImport
 {
@@ -35,11 +27,13 @@ namespace GltfImport
             };
             Entity.Add(new ModelComponent(modelLoader.GetModel(0)));
             Log.Info("Model Loaded");
+
         }
 
         public override void Update()
         {
             var model = Entity.Get<ModelComponent>();
+            //model.Skeleton.NodeTransformations[6].Transform.Rotation *= Quaternion.RotationX(0.000001f * (float)Game.UpdateTime.Elapsed.TotalSeconds);
         }
     }
 }

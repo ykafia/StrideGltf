@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using SharpDX.Mathematics.Interop;
 using Stride.Core.Mathematics;
 
 namespace Stride.Graphics
@@ -15,7 +16,7 @@ namespace Stride.Graphics
         /// </summary>
         /// <param name="position">The position of this vertex.</param>
         /// <param name="textureCoordinate">UV texture coordinates.</param>
-        public VertexPNTJW(Vector3 position, Vector3 normal, Vector2 textureCoordinate, Vector4 joint, Vector4 weight)
+        public VertexPNTJW(Vector3 position, Vector3 normal, Vector2 textureCoordinate, Int4 joint, Vector4 weight)
             : this()
         {
             Position = position;
@@ -43,7 +44,7 @@ namespace Stride.Graphics
         /// <summary>
         /// BlendIndices vector.
         /// </summary>
-        public Vector4 BlendIndices;
+        public Int4 BlendIndices;
 
         /// <summary>
         /// BlendWeight vector.
@@ -55,7 +56,7 @@ namespace Stride.Graphics
         /// <summary>
         /// Defines structure byte size.
         /// </summary>
-        public static readonly int Size = 12+12+8+4+12;
+        public static readonly int Size = 12+12+8+4+16;
 
         /// <summary>
         /// The vertex layout of this struct.
@@ -65,7 +66,7 @@ namespace Stride.Graphics
                 VertexElement.Position<Vector3>(),
                 VertexElement.Normal<Vector3>(),
                 VertexElement.TextureCoordinate<Vector2>(),
-                new VertexElement(VertexElementUsage.BlendIndices,3,PixelFormat.R8G8B8A8_UInt,VertexElement.AppendAligned),
+                new VertexElement(VertexElementUsage.BlendIndices,3,PixelFormat.R32G32B32A32_UInt,VertexElement.AppendAligned),
                 new VertexElement(VertexElementUsage.BlendWeight,4, PixelFormat.R32G32B32A32_Float,VertexElement.AppendAligned)
             );
 

@@ -216,7 +216,7 @@ namespace GltfImport
                             ToStrideVector3(positions[i]),
                             ToStrideVector3(normals[i]),
                             ToStrideVector2(texCoords[i]),
-                            ToStrideVector4(joints[i]),
+                            ToStrideInt4(joints[i]),
                             ToStrideVector4(weights[i])
                         )
                     );
@@ -356,6 +356,8 @@ namespace GltfImport
         }
 
         private Vector4 ToStrideVector4(System.Numerics.Vector4 a) => new Vector4(a.X, a.Y, a.Z, a.W);
+        private Int4 ToStrideInt4(System.Numerics.Vector4 a) => new Int4((int)a.X, (int)a.Y, (int)a.Z, (int)a.W);
+
         private Vector3 ToStrideVector3(System.Numerics.Vector3 a) => new Vector3(a.X, a.Y, a.Z);
         private Vector2 ToStrideVector2(System.Numerics.Vector2 a) => new Vector2(a.X, a.Y);
         private VertexPNTJW[] AsVPNTJW(IVertex[] v) => v.Select(x => (VertexPNTJW)x).ToArray();

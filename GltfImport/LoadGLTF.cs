@@ -27,7 +27,7 @@ namespace GltfImport
             };
             Entity.Add(new ModelComponent(modelLoader.GetModel(0)));
             Log.Info("Model Loaded");
-
+            
         }
 
         public override void Update()

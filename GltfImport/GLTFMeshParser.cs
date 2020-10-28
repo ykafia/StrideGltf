@@ -14,6 +14,10 @@ using Stride.Core.Shaders.Ast;
 using Stride.Shaders.Parser.Mixins;
 using Stride.Core;
 using Stride.Core.Collections;
+using System.Globalization;
+using SharpGLTF.Geometry.VertexTypes;
+using Stride.Graphics.GeometricPrimitives;
+using Stride.Extensions;
 
 namespace GltfImport
 {
@@ -31,6 +35,8 @@ namespace GltfImport
         public SharpGLTF.Schema2.ModelRoot GltfRoot { get; set; }
         public SharpGLTF.Schema2.Mesh CurrentMesh { get; set; }
         public Stride.Core.Serialization.Contents.ContentManager Content { get; set; }
+
+        public GeometricMeshData<VertexPNTJW> GeometricData;
 
         public Logger Logger { get; set; }
         // public Dictionary<string, Texture> Textures { get; set; }
@@ -58,11 +64,7 @@ namespace GltfImport
                 
                 
                 var mesh = new Mesh { Draw = GetMeshDraw(i) };
-                //var pc = new ParameterCollection { ParameterKeyInfos = }
-                mesh.Parameters.ObjectValues = new object[] { true, true };
-                //material.Passes.ForEach(x => x.Parameters.Set<bool>(MaterialKeys.HasSkinningPosition, true));
-                //material.Passes.ForEach(x => x.Parameters.Set<bool>(MaterialKeys.HasSkinningNormal, true));
-
+                
                 mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningPosition, true);
                 mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningNormal, true);
 
@@ -128,40 +130,62 @@ namespace GltfImport
             Stride.Graphics.Buffer vBuff;
             var vs = GetVertexBuffer(primitiveID);
             var vt = GetVertexType(primitiveID);
-            if (vt == VertexType.VertexPositionNormalTexture)
-            {
-                vBuff = Stride.Graphics.Buffer.Vertex.New(
+            //if (vt == VertexType.VertexPositionNormalTexture)
+            //{
+            //    vBuff = Stride.Graphics.Buffer.Vertex.New(
+            //        Device,
+            //        AsVPNTJW(vs),
+            //        GraphicsResourceUsage.Default
+            //    );
+            //}
+            //else
+            //{
+            //    vBuff = Stride.Graphics.Buffer.Vertex.New(
+            //        Device,
+            //        AsVPT(vs),
+            //        GraphicsResourceUsage.Dynamic
+            //    );
+            //}
+            vBuff = Stride.Graphics.Buffer.Vertex.New(
                     Device,
-                    AsVPNT(vs),
-                    GraphicsResourceUsage.Dynamic
+                    AsVPNTJW(vs),
+                    GraphicsResourceUsage.Default
                 );
-            }
-            else
-            {
-                vBuff = Stride.Graphics.Buffer.Vertex.New(
-                    Device,
-                    AsVPT(vs),
-                    GraphicsResourceUsage.Dynamic
-                );
-            }
 
             var iBuff = Stride.Graphics.Buffer.Index.New(
                 Device,
                 GetIndices(primitiveID)
             );
             var primitiveType = GetPrimitiveType(primitiveID);
+            List<VertexElement> elems = new List<VertexElement>();
 
 
             return new MeshDraw
             {
                 PrimitiveType = primitiveType,
                 DrawCount = iBuff.ElementCount,
-                VertexBuffers = new[] { new VertexBufferBinding(vBuff, VertexPositionNormalTexture.Layout, vBuff.ElementCount) },
+                VertexBuffers = new[] { new VertexBufferBinding(vBuff, VertexPNTJW.Layout, vBuff.ElementCount) },
                 IndexBuffer = new IndexBufferBinding(iBuff, true, iBuff.ElementCount),
             };
 
-        }
 
+        }
+        public bool IsSkinnedMesh() => CurrentMesh.AllPrimitivesHaveJoints;
+        //public VertexElement[] getVertexDefinition(int primitiveID)
+        //{
+        //    //TODO: Support multiple joints (up to 4) and multiple weights (up to 4) if needed
+        //    var result = new List<VertexElement>();
+        //    if(IsSkinnedMesh())
+        //    {
+        //        var joints = CurrentMesh.Primitives[primitiveID].VertexAccessors["JOINTS_0"].AsVector4Array().Select(ToStrideVector4).ToArray();
+        //        var weights = CurrentMesh.Primitives[primitiveID].VertexAccessors["WEIGHTS_0"].AsVector4Array().Select(ToStrideVector4).ToArray();
+        //        for(int i = 0; i< joints.Length; i++)
+        //        {
+        //            //result.Add(new VertexElement(VertexElementUsage.BlendWeight, (int)joints[i].X, PixelFormat.None, -1));
+        //        }
+        //    }
+        //    return new VertexElement[]();
+        //}
         public VertexType GetVertexType(int primitiveID)
         {
             var keys = CurrentMesh.Primitives[primitiveID].VertexAccessors.Keys;
@@ -172,18 +196,30 @@ namespace GltfImport
         }
         public IVertex[] GetVertexBuffer(int primitiveID)
         {
+            //TODO: Use GeometricMeshData with left handed value            
+
             var result = new List<IVertex>();
+            var elems = new List<VertexElement>();
             if (GetVertexType(primitiveID) == VertexType.VertexPositionNormalTexture)
             {
                 var positions = CurrentMesh.Primitives[primitiveID].VertexAccessors["POSITION"].AsVector3Array();
                 var normals = CurrentMesh.Primitives[primitiveID].VertexAccessors["NORMAL"].AsVector3Array();
-
+                var joints = CurrentMesh.Primitives[primitiveID].VertexAccessors["JOINTS_0"].AsVector4Array();
+                var weights = CurrentMesh.Primitives[primitiveID].VertexAccessors["WEIGHTS_0"].AsVector4Array();
                 var texAccessor = CurrentMesh.Primitives[primitiveID].VertexAccessors.Where(x => x.Key.Contains("TEXCOORD")).Select(x => x.Key).First();
                 var texCoords = CurrentMesh.Primitives[primitiveID].VertexAccessors[texAccessor].AsVector2Array();
 
                 for (int i = 0; i < positions.Count(); i++)
                 {
-                    result.Add(new VertexPositionNormalTexture(ToStrideVector3(positions[i]), ToStrideVector3(normals[i]), ToStrideVector2(texCoords[i])));
+                    result.Add(
+                        new VertexPNTJW(
+                            ToStrideVector3(positions[i]),
+                            ToStrideVector3(normals[i]),
+                            ToStrideVector2(texCoords[i]),
+                            ToStrideVector4(joints[i]),
+                            ToStrideVector4(weights[i])
+                        )
+                    );
                 }
                 return result.ToArray();
             }
@@ -200,7 +236,10 @@ namespace GltfImport
                 return result.ToArray();
             }
         }
-        public UInt32[] GetIndices(int primitiveID)
+
+
+
+        public uint[] GetIndices(int primitiveID)
         {
             var prim = CurrentMesh.Primitives[primitiveID];
 
@@ -263,7 +302,7 @@ namespace GltfImport
             for (int i = 0; i < foxSkin.JointsCount; i++)
             {
                 glnodes.Add(foxSkin.GetJoint(i).Joint);
-                matNodes.Add(foxSkin.GetJoint(i).InverseBindMatrix);
+                //matNodes.Add(foxSkin.GetJoint(i).InverseBindMatrix);
 
             }
             glnodes.ForEach(
@@ -287,14 +326,14 @@ namespace GltfImport
                  );
 
             //var mbd = new List<MeshBoneDefinition>();
-            //for(int i = 0; i<matNodes.Count;i++)
+            //for (int i = 0; i < matNodes.Count; i++)
             //{
             //    var tmp = ToStrideMatrix(matNodes[i]);
             //    tmp.Transpose();
             //    mbd.Add(new MeshBoneDefinition
             //    {
-            //        NodeIndex = i,
-            //        LinkToMeshMatrix = ToStrideMatrix(matNodes[0]) * tmp * Matrix.Identity
+            //        NodeIndex = i
+            //        //LinkToMeshMatrix = ToStrideMatrix(matNodes[0]) * tmp * Matrix.Identity
             //    });
             //}
             sk.Nodes = nodes.ToArray();
@@ -315,8 +354,11 @@ namespace GltfImport
                 return -1;
             }
         }
+
+        private Vector4 ToStrideVector4(System.Numerics.Vector4 a) => new Vector4(a.X, a.Y, a.Z, a.W);
         private Vector3 ToStrideVector3(System.Numerics.Vector3 a) => new Vector3(a.X, a.Y, a.Z);
         private Vector2 ToStrideVector2(System.Numerics.Vector2 a) => new Vector2(a.X, a.Y);
+        private VertexPNTJW[] AsVPNTJW(IVertex[] v) => v.Select(x => (VertexPNTJW)x).ToArray();
         private VertexPositionNormalTexture[] AsVPNT(IVertex[] v) => v.Select(x => (VertexPositionNormalTexture)x).ToArray();
         private VertexPositionTexture[] AsVPT(IVertex[] v) => v.Select(x => (VertexPositionTexture)x).ToArray();
         public Vector3 ToStridePosition(SharpGLTF.Transforms.AffineTransform tr) => new Vector3(tr.Translation.X, tr.Translation.Y, tr.Translation.Z);

@@ -9,15 +9,9 @@ using Stride.Graphics;
 using Stride.Rendering.Materials;
 using Stride.Rendering.Materials.ComputeColors;
 using Stride.Core.Diagnostics;
+using Stride.Core;
 using Stride.Core.Extensions;
 using Stride.Core.Shaders.Ast;
-using Stride.Shaders.Parser.Mixins;
-using Stride.Core;
-using Stride.Core.Collections;
-using System.Globalization;
-using SharpGLTF.Geometry.VertexTypes;
-using Stride.Graphics.GeometricPrimitives;
-using Stride.Extensions;
 
 namespace GltfImport
 {
@@ -47,13 +41,15 @@ namespace GltfImport
             CurrentMesh = GltfRoot.LogicalMeshes[modelID];
             for (int i = 0; i < GltfRoot.LogicalMeshes[modelID].Primitives.Count; i++)
             {
-                var matDesc = GetMaterial(i);
-                // var matDesc = new MaterialDescriptor{
-                //     Attributes = new MaterialAttributes {
-                //         Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(Stride.Core.Mathematics.Color.AliceBlue)),
-                //         DiffuseModel = new MaterialDiffuseLambertModelFeature()
-                //     }
-                // };
+                //var matDesc = GetMaterial(i);
+                var matDesc = new MaterialDescriptor
+                {
+                    Attributes = new MaterialAttributes
+                    {
+                        Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(Stride.Core.Mathematics.Color.AliceBlue)),
+                        DiffuseModel = new MaterialDiffuseLambertModelFeature()
+                    }
+                };
                 var material = Material.New(Device, matDesc);
                 model.Add(material);
                 //var pc = new ParameterCollection();
@@ -61,17 +57,17 @@ namespace GltfImport
                 //pc.ParameterKeyInfos.Add(p);
 
 
-                
-                
+
+
                 var mesh = new Mesh { Draw = GetMeshDraw(i) };
-                
+
                 mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningPosition, true);
                 mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningNormal, true);
 
-                Logger.Info("Index of material is : " + model.Materials.IndexOf(material));
+                //Logger.Info("Index of material is : " + model.Materials.IndexOf(material));
                 mesh.MaterialIndex = model.Materials.IndexOf(material);
                 model.Add(mesh);
-                model.Skeleton = GetSkeleton(mesh);
+                model.Skeleton = GetSkeleton(i, mesh);
             }
             return model;
         }
@@ -101,9 +97,10 @@ namespace GltfImport
                             };
 
                             material.Attributes.Diffuse = new MaterialDiffuseMapFeature(vt);
-                            
+
                             material.Attributes.DiffuseModel = new MaterialDiffuseLambertModelFeature();
-                            Logger.Info("Added diffuse material");
+                            //material.Attributes.DiffuseModel = new MaterialDiffuseCelShadingModelFeature();
+                            //Logger.Info("Added diffuse material");
                             break;
                         case "MetallicRoughness":
                             material.Attributes.MicroSurface = new MaterialGlossinessMapFeature(new ComputeTextureScalar(texture, TextureCoordinate.Texcoord0, Vector2.One, Vector2.Zero));
@@ -157,35 +154,19 @@ namespace GltfImport
                 GetIndices(primitiveID)
             );
             var primitiveType = GetPrimitiveType(primitiveID);
-            List<VertexElement> elems = new List<VertexElement>();
-
 
             return new MeshDraw
             {
                 PrimitiveType = primitiveType,
                 DrawCount = iBuff.ElementCount,
                 VertexBuffers = new[] { new VertexBufferBinding(vBuff, VertexPNTJW.Layout, vBuff.ElementCount) },
-                IndexBuffer = new IndexBufferBinding(iBuff, true, iBuff.ElementCount),
+                IndexBuffer = new IndexBufferBinding(iBuff, true, iBuff.ElementCount)
             };
 
 
         }
         public bool IsSkinnedMesh() => CurrentMesh.AllPrimitivesHaveJoints;
-        //public VertexElement[] getVertexDefinition(int primitiveID)
-        //{
-        //    //TODO: Support multiple joints (up to 4) and multiple weights (up to 4) if needed
-        //    var result = new List<VertexElement>();
-        //    if(IsSkinnedMesh())
-        //    {
-        //        var joints = CurrentMesh.Primitives[primitiveID].VertexAccessors["JOINTS_0"].AsVector4Array().Select(ToStrideVector4).ToArray();
-        //        var weights = CurrentMesh.Primitives[primitiveID].VertexAccessors["WEIGHTS_0"].AsVector4Array().Select(ToStrideVector4).ToArray();
-        //        for(int i = 0; i< joints.Length; i++)
-        //        {
-        //            //result.Add(new VertexElement(VertexElementUsage.BlendWeight, (int)joints[i].X, PixelFormat.None, -1));
-        //        }
-        //    }
-        //    return new VertexElement[]();
-        //}
+
         public VertexType GetVertexType(int primitiveID)
         {
             var keys = CurrentMesh.Primitives[primitiveID].VertexAccessors.Keys;
@@ -196,7 +177,7 @@ namespace GltfImport
         }
         public IVertex[] GetVertexBuffer(int primitiveID)
         {
-            //TODO: Use GeometricMeshData with left handed value            
+                    
 
             var result = new List<IVertex>();
             var elems = new List<VertexElement>();
@@ -267,94 +248,90 @@ namespace GltfImport
             };
         }
 
-        // public Object GetIndicesByType(int primitiveID)
-        // {
-        //     List<int> indices = new List<int>();
-        //     switch(CurrentMesh.Primitives[primitiveID].DrawPrimitiveType)
-        //     {
-        //         case SharpGLTF.Schema2.PrimitiveType.TRIANGLES :
-        //             CurrentMesh.Primitives[primitiveID].GetTriangleIndices().ToList().ForEach(i => {indices.Add(i.A);indices.Add(i.B);indices.Add(i.C);});
-        //             return indices;
-        //         case SharpGLTF.Schema2.PrimitiveType.TRIANGLE_STRIP :
-        //             CurrentMesh.Primitives[primitiveID].GetTriangleIndices();
-        //         case SharpGLTF.Schema2.PrimitiveType.LINES :
-        //             Stride.Graphics.PrimitiveType.LineList;
-        //         case SharpGLTF.Schema2.PrimitiveType.POINTS :
-        //             Stride.Graphics.PrimitiveType.PointList;
-        //         case SharpGLTF.Schema2.PrimitiveType.LINE_LOOP :
-        //             Stride.Graphics.PrimitiveType.Undefined;
-        //         case SharpGLTF.Schema2.PrimitiveType.LINE_STRIP :
-        //             Stride.Graphics.PrimitiveType.Undefined;
-        //         case SharpGLTF.Schema2.PrimitiveType.TRIANGLE_FAN :
-        //             Stride.Graphics.PrimitiveType.Undefined;
-        //         _ => Stride.Graphics.PrimitiveType.Undefined,
-        //     };
-        // }
-
-        public Skeleton GetSkeleton(Mesh mesh)
+        
+        // TODO : Check each joints *FOR EACH MESHES*
+        public Skeleton GetSkeleton(int primitiveID, Mesh mesh)
         {
             var foxSkin = GltfRoot.LogicalNodes.First(x => x.Mesh == CurrentMesh).Skin;
+            List<int> BoneInfluencing = new List<int>();
+            var glSK = foxSkin.Skeleton;
+            CurrentMesh
+                .Primitives[primitiveID]
+                .VertexAccessors["JOINTS_0"]
+                .AsVector4Array()
+                .ToList()
+                .ForEach(
+                    x=> { BoneInfluencing.Add((int)x.X); BoneInfluencing.Add((int)x.Y); BoneInfluencing.Add((int)x.Z); BoneInfluencing.Add((int)x.W); }
+            );
+            BoneInfluencing = BoneInfluencing.Distinct().ToList();
             var sk = new Skeleton();
             var nodes = new List<ModelNodeDefinition>();
             var glnodes = new List<SharpGLTF.Schema2.Node>();
             var matNodes = new List<System.Numerics.Matrix4x4>();
-
+            //var glJoints = new List<(SharpGLTF.Schema2.Node, System.Numerics.Matrix4x4)>();
             for (int i = 0; i < foxSkin.JointsCount; i++)
             {
                 glnodes.Add(foxSkin.GetJoint(i).Joint);
-                //matNodes.Add(foxSkin.GetJoint(i).InverseBindMatrix);
-
+                matNodes.Add(foxSkin.GetJoint(i).InverseBindMatrix);
             }
             glnodes.ForEach(
-                     x =>
-                     {
-                         Logger.Info(x.LocalTransform.Translation.ToString());
-                         nodes.Add(
-                         new ModelNodeDefinition
-                         {
-                             Flags = ModelNodeFlags.Default,
-                             ParentIndex = GetParentNodeIndex(glnodes, x),
-                             Transform =
-                                     new TransformTRS
-                                     {
-                                         Position = ToStrideVector3(x.WorldMatrix.Translation),
-                                         Rotation = ToStrideRotation(x.LocalTransform)
-                                     },
-                             Name = x.Name
-                         });
-                     }
-                 );
+                x =>
+                {
+                    var pn = GetParentNodeIndex(glnodes, x);
+                    nodes.Add(
+                        new ModelNodeDefinition
+                        {
+                            Flags = pn == -1 ? ModelNodeFlags.EnableRender : ModelNodeFlags.Default,
+                            ParentIndex = pn,
+                            Transform =
+                                    new TransformTRS
+                                    {
+                                        Position = ToStrideVector3(x.LocalTransform.Translation),
+                                        Rotation = ToStrideQuaternion(x.LocalTransform.Rotation),
+                                        Scale = ToStrideVector3(x.LocalTransform.Scale)
+                                    },
+                            Name = x.Name
+                        }
+                    );
+                }
+            );
 
-            //var mbd = new List<MeshBoneDefinition>();
-            //for (int i = 0; i < matNodes.Count; i++)
-            //{
-            //    var tmp = ToStrideMatrix(matNodes[i]);
-            //    tmp.Transpose();
-            //    mbd.Add(new MeshBoneDefinition
-            //    {
-            //        NodeIndex = i
-            //        //LinkToMeshMatrix = ToStrideMatrix(matNodes[0]) * tmp * Matrix.Identity
-            //    });
-            //}
+            var rootTransform = ToStrideMatrix2(glnodes[0].WorldMatrix);
+            var rootTransformInverse = rootTransform;
+            rootTransformInverse.Invert();
+
+            
+            var mbd = 
+                BoneInfluencing
+                .Select(x => (x, ToStrideMatrix1(matNodes[x])))
+                .Select(
+                    v => new MeshBoneDefinition 
+                    { 
+                        NodeIndex = v.x, 
+                        LinkToMeshMatrix = v.Item2//rootTransformInverse*v.Item2*rootTransform 
+                    })
+                .ToList();
+
+            
             sk.Nodes = nodes.ToArray();
-            //mesh.Skinning = new MeshSkinningDefinition
-            //{
-            //    Bones = mbd.ToArray()
-            //};
+            mesh.Skinning = new MeshSkinningDefinition
+            {
+                Bones = mbd.ToArray()
+            };
+
             return sk;
         }
-        private int GetParentNodeIndex(List<SharpGLTF.Schema2.Node> glnodes, SharpGLTF.Schema2.Node current ) 
+        private int GetParentNodeIndex(List<SharpGLTF.Schema2.Node> glnodes, SharpGLTF.Schema2.Node current)
         {
             try
             {
                 return glnodes.IndexOf(glnodes.First(y => y.Name == current.VisualParent.Name));
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return -1;
             }
         }
-
         private Vector4 ToStrideVector4(System.Numerics.Vector4 a) => new Vector4(a.X, a.Y, a.Z, a.W);
         private Int4 ToStrideInt4(System.Numerics.Vector4 a) => new Int4((int)a.X, (int)a.Y, (int)a.Z, (int)a.W);
 
@@ -364,11 +341,20 @@ namespace GltfImport
         private VertexPositionNormalTexture[] AsVPNT(IVertex[] v) => v.Select(x => (VertexPositionNormalTexture)x).ToArray();
         private VertexPositionTexture[] AsVPT(IVertex[] v) => v.Select(x => (VertexPositionTexture)x).ToArray();
         public Vector3 ToStridePosition(SharpGLTF.Transforms.AffineTransform tr) => new Vector3(tr.Translation.X, tr.Translation.Y, tr.Translation.Z);
-        public Quaternion ToStrideRotation(SharpGLTF.Transforms.AffineTransform tr) => new Quaternion(tr.Rotation.X, tr.Rotation.Y, tr.Rotation.Z, tr.Rotation.W);
-        public Matrix ToStrideMatrix(System.Numerics.Matrix4x4 mat)
+        public Quaternion ToStrideQuaternion(System.Numerics.Quaternion rot) => new Quaternion(rot.X, rot.Y, rot.Z, rot.W);
+        public Matrix ToStrideMatrix1(System.Numerics.Matrix4x4 mat)
         {
             return new Matrix(
-                    mat.M11,mat.M12,mat.M13, mat.M14,
+                    mat.M11, mat.M21, mat.M31, mat.M41,
+                    mat.M12, mat.M22, mat.M32, mat.M42,
+                    mat.M13, mat.M23, mat.M33, mat.M43,
+                    mat.M14, mat.M24, mat.M34, mat.M44
+                );
+        }
+        public Matrix ToStrideMatrix2(System.Numerics.Matrix4x4 mat)
+        {
+            return new Matrix(
+                    mat.M11, mat.M12, mat.M13, mat.M14,
                     mat.M21, mat.M22, mat.M23, mat.M24,
                     mat.M31, mat.M32, mat.M33, mat.M34,
                     mat.M41, mat.M42, mat.M43, mat.M44

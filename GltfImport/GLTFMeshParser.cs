@@ -296,19 +296,19 @@ namespace GltfImport
                 }
             );
 
-            var rootTransform = ToStrideMatrix2(glnodes[0].WorldMatrix);
+            var rootTransform = ToStrideMatrix(glnodes[0].WorldMatrix);
             var rootTransformInverse = rootTransform;
             rootTransformInverse.Invert();
 
             
             var mbd = 
                 BoneInfluencing
-                .Select(x => (x, ToStrideMatrix1(matNodes[x])))
+                .Select(x => (x, ToStrideMatrix(matNodes[x])))
                 .Select(
                     v => new MeshBoneDefinition 
                     { 
                         NodeIndex = v.x, 
-                        LinkToMeshMatrix = v.Item2//rootTransformInverse*v.Item2*rootTransform 
+                        LinkToMeshMatrix = rootTransformInverse*v.Item2*rootTransform 
                     })
                 .ToList();
 
@@ -342,16 +342,8 @@ namespace GltfImport
         private VertexPositionTexture[] AsVPT(IVertex[] v) => v.Select(x => (VertexPositionTexture)x).ToArray();
         public Vector3 ToStridePosition(SharpGLTF.Transforms.AffineTransform tr) => new Vector3(tr.Translation.X, tr.Translation.Y, tr.Translation.Z);
         public Quaternion ToStrideQuaternion(System.Numerics.Quaternion rot) => new Quaternion(rot.X, rot.Y, rot.Z, rot.W);
-        public Matrix ToStrideMatrix1(System.Numerics.Matrix4x4 mat)
-        {
-            return new Matrix(
-                    mat.M11, mat.M21, mat.M31, mat.M41,
-                    mat.M12, mat.M22, mat.M32, mat.M42,
-                    mat.M13, mat.M23, mat.M33, mat.M43,
-                    mat.M14, mat.M24, mat.M34, mat.M44
-                );
-        }
-        public Matrix ToStrideMatrix2(System.Numerics.Matrix4x4 mat)
+        
+        public Matrix ToStrideMatrix(System.Numerics.Matrix4x4 mat)
         {
             return new Matrix(
                     mat.M11, mat.M12, mat.M13, mat.M14,

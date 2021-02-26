@@ -1,0 +1,13 @@
+!Skeleton
+Id: e03ad529-bc1c-453b-8880-e31cc5b20211
+SerializedVersion: {Stride: 2.0.0.0}
+Tags: []
+Source: !file C:/Users/kafia/Documents/blender try/SimpleCube.dae
+PivotPosition: {X: 0.0, Y: 0.0, Z: 0.0}
+Nodes:
+    9cabbe650eadd50df30511a4b5aa29b2: {Name: Scene, Depth: 0}
+    cfe8d07f176abbbd580b111e5259be9f: {Name: Armature, Depth: 1}
+    89113d8d701b2e7e6eda02379bff97e2: {Name: Armature_Bone, Depth: 2}
+    08a16345a83f5f35aae6d936b2a33d26: {Name: Cube, Depth: 2}
+~SourceHashes:
+    f8972abcba0a54b351875128189e3203~C:/Users/kafia/Documents/blender try/SimpleCube.dae: 03d34d87c714d2ce8c158f1091ca4219

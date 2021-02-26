@@ -1,0 +1,14 @@
+!Skeleton
+Id: 88f20b80-80e3-4dc0-8bbd-c6c83a7fc128
+SerializedVersion: {Stride: 2.0.0.0}
+Tags: []
+Source: !file C:/Users/kafia/Documents/blender try/SimpleCube.fbx
+PivotPosition: {X: 0.0, Y: 0.0, Z: 0.0}
+Nodes:
+    c336d590a0ad1836e5beac143ad0b3dc: {Name: RootNode, Depth: 0}
+    4b6b50fb5346f61c83ee54fbcf82582f: {Name: Cube, Depth: 1}
+    4c60a48036d941b51ccaaeec2d813ee9: {Name: Armature, Depth: 1}
+    79b8b22a7a74d8e21fb3925dab29eeb9: {Name: Bone, Depth: 2}
+    870a54f263713037207b5e9294a016e1: {Name: Bone_end, Depth: 3}
+~SourceHashes:
+    a75daf8cffc3677ad97d0e5ab64972ae~C:/Users/kafia/Documents/blender try/SimpleCube.fbx: db2a31fa6174adcc9e7cc2ac71d7b43b

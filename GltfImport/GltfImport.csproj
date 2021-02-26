@@ -6,14 +6,14 @@
     <LangVersion>default</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SharpGLTF.Core" Version="1.0.0-alpha0020" />
-    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0020" />
-    <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1317" />
-    <PackageReference Include="Stride.Video" Version="4.0.0.1-beta04-1317" />
-    <PackageReference Include="Stride.Physics" Version="4.0.0.1-beta04-1317" />
-    <PackageReference Include="Stride.Navigation" Version="4.0.0.1-beta04-1317" />
-    <PackageReference Include="Stride.Particles" Version="4.0.0.1-beta04-1317" />
-    <PackageReference Include="Stride.UI" Version="4.0.0.1-beta04-1317" />
-    <PackageReference Include="Stride.Core.Assets.CompilerApp" Version="4.0.0.1-beta04-1317" IncludeAssets="build;buildTransitive" />
+    <PackageReference Include="SharpGLTF.Core" Version="1.0.0-alpha0021" />
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0021" />
+    <PackageReference Include="Stride.Engine" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Video" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Physics" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Navigation" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Particles" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.UI" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Core.Assets.CompilerApp" Version="4.0.1.1400" IncludeAssets="build;buildTransitive" />
   </ItemGroup>
 </Project>

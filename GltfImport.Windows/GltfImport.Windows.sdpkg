@@ -15,7 +15,6 @@ ExplicitFolders: []
 Bundles: []
 TemplateFolders: []
 RootAssets:
-    - 1efa1644-f9e3-45ad-93ab-4b9ed9198bf8:AnimatedCube_MetallicRoughness
-    - 78210e4c-5a0d-423f-bfa5-0e236c9a38bc:Cube Material
     - bd7a90dc-90df-4f6f-83b4-a2a23e48906a:Cube
-    - c0c3d234-fe74-4de1-a933-d22996f1d28d:Fish
+    - d814901d-4642-4be9-8f23-5c6917411ce2:SimpleCube
+    - e1e3d4d4-ec4a-4dc1-8ca0-d7da077132fb:SimpleCube_2

@@ -4,51 +4,44 @@ using Stride.Input;
 using Stride.Engine;
 using Stride.Core.Diagnostics;
 using Stride.Shaders.Parser.Mixins;
+using Stride.Graphics;
+using System.Linq;
 
 namespace GltfImport
 {
     public class LoadGLTF : SyncScript
     {
         // Declared public member fields and properties will show in the game studio
+        private bool loaded = false;
+
         public string Path { get; set; }
 
         public SharpGLTF.Schema2.ModelRoot fox_glb;
         public override void Start()
         {
+            //Entity.Transform.Position = Vector3.UnitY;
             Log.ActivateLog(LogMessageType.Info);
             // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/cube/AnimatedCube.gltf");
             //fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/fox/Fox.gltf");
             // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/icosphere/icosphere.gltf");
             // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/torus/torus.gltf");
             fox_glb = SharpGLTF.Schema2.ModelRoot.Load("C:/Users/kafia/Documents/blender try/SimpleCube.gltf");
-            var modelLoader = new GLTFMeshParser
-            {
-                Device = this.GraphicsDevice,
-                GltfRoot = fox_glb,
-                Logger = Log
-            };
-            Entity.Add(new ModelComponent(modelLoader.GetModel(0)));
-            Log.Info("Model Loaded");
             
         }
 
         public override void Update()
         {
-            var model = Entity.Get<ModelComponent>();
-            UpdateModel();
-            //model.Skeleton.NodeTransformations[6].Transform.Rotation *= Quaternion.RotationX(30 * (float)Game.UpdateTime.Elapsed.TotalSeconds);
+            
+            if (!loaded) 
+            {                
+                Entity.Add(new ModelComponent(GltfParser.LoadFirstModel(GraphicsDevice, fox_glb)));
+                Log.Info("Model Loaded");
+                loaded = true;
+            }
+            DebugText.Print(Entity.Transform.Position.ToString(),new Int2(10,10));
+            //var model = Entity.Get<ModelComponent>();
+
         }
 
-        public void UpdateModel()
-        {
-            Entity.Remove<ModelComponent>();
-            var modelLoader = new GLTFMeshParser
-            {
-                Device = this.GraphicsDevice,
-                GltfRoot = fox_glb,
-                Logger = Log
-            };
-            Entity.Add(new ModelComponent(modelLoader.GetModel(0)));
-        }
     }
 }

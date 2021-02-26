@@ -1,0 +1,15 @@
+!Model
+Id: d814901d-4642-4be9-8f23-5c6917411ce2
+SerializedVersion: {Stride: 2.0.0.0}
+Tags: []
+Source: !file C:/Users/kafia/Documents/blender try/SimpleCube.fbx
+Skeleton: 88f20b80-80e3-4dc0-8bbd-c6c83a7fc128:SimpleCube Skeleton
+PivotPosition: {X: 0.0, Y: 0.0, Z: 0.0}
+Materials:
+    1197b952b2d1480e5e2415a89544c24a:
+        Name: Material
+        MaterialInstance:
+            Material: d65f1e5c-87d6-4d28-9e8d-01e4cadb9523:Material
+Modifiers: {}
+~SourceHashes:
+    d5ab0d0496b92d47e519095f1b5840b7~C:/Users/kafia/Documents/blender try/SimpleCube.fbx: db2a31fa6174adcc9e7cc2ac71d7b43b

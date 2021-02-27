@@ -63,8 +63,8 @@ namespace GltfImport
 
                 var mesh = new Mesh { Draw = GetMeshDraw(i) };
 
-                mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningPosition, true);
-                mesh.Parameters.Set<bool>(MaterialKeys.HasSkinningNormal, true);
+                mesh.Parameters.Set(MaterialKeys.HasSkinningPosition, true);
+                mesh.Parameters.Set(MaterialKeys.HasSkinningNormal, true);
 
                 //Logger.Info("Index of material is : " + model.Materials.IndexOf(material));
                 mesh.MaterialIndex = model.Materials.IndexOf(material);

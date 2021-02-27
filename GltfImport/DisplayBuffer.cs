@@ -23,57 +23,22 @@ namespace GltfImport
         public override void Update()
         {
             var model = this.Entity.Get<ModelComponent>();
-            if (model!= null)
-            {
-                var declaration = model.Model.Meshes[0].Draw.VertexBuffers.First().Declaration;
-                if (declaration.Equals(VertexSkinned.Layout))
-                {
-                    var biw = 
-                        model.Model.Meshes[0]
-                        .Draw.VertexBuffers.First()
-                        .Buffer
-                        .GetData<VertexSkinned>(Game.GraphicsContext.CommandList)
-                        .Select(x => (x.BlendIndices, x.BlendWeight))
-                        .ToArray();
-                    for (int i = 0; i < biw.Count(); i++)
-                    {
-                        DebugText.Print(biw[i].ToString(), new Int2(200 * Number, 20 * i + 10));
-                    }
-                }
-                else //if (declaration.Equals(VertexPNTJWT.Layout))
-                {
-                    var biw =
-                        model.Model.Meshes[0]
-                        .Draw.VertexBuffers.First()
-                        .Buffer
-                        .GetData<VertexPNTJWT>(Game.GraphicsContext.CommandList)
-                        .Select(x => (x.BlendIndices, x.BlendWeight))
-                        .ToArray();
-                    for (int i = 0; i < biw.Count(); i++)
-                    {
-                        DebugText.Print(ByteString(biw[i].BlendIndices), new Int2(200 * Number, 20 * i + 10));
-                    }
-                }
-                //else
-                //{
-                //    for (int i = 0; i < declaration.VertexElements.Count(); i++)
-                //    {
-                //        DebugText.Print(declaration.VertexElements[i].ToString(), new Int2(200 * Number, 20*i+10));
-                //    }
-                //    for (int i = 0; i < VertexPNTJWT.Layout.VertexElements.Count(); i++)
-                //    {
-                //        DebugText.Print(VertexPNTJWT.Layout.VertexElements[i].ToString(), new Int2(200 * Number, 20 * i + 30 + 20* declaration.VertexElements.Count()));
-                //    }
+            //if (model!= null)
+            //{
+            //    var declaration = model.Model.Meshes[0].Draw.VertexBuffers.First().Declaration;
+            //    var buffer = model.Model.Meshes.First().Draw.VertexBuffers.First().Buffer.GetData<byte>(Game.GraphicsContext.CommandList);
+            //    for (int i = 0; i < buffer.Length; i+=64)
+            //    {
+            //        var position = new Vector3(
+            //            BitConverter.ToSingle(new ArraySegment<byte>(buffer, i,4).Array, 0),
+            //            BitConverter.ToSingle(new ArraySegment<byte>(buffer, i+4, 4).Array, 0),
+            //            BitConverter.ToSingle(new ArraySegment<byte>(buffer, i+8, 4).Array, 0)
+            //        );
+            //        DebugText.Print(position.ToString(), new Int2(Number * 200, i / 2));
+            //    }
+            //}
 
-                //}
-            }
-            
         }
 
-        private String ByteString(int i)
-        {
-            var array = BitConverter.GetBytes(i);
-            return $"{{x : {array[0]},y : {array[1]},z : {array[2]},w : {array[3]}}}";
-        }
     }
 }

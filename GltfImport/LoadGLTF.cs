@@ -6,6 +6,7 @@ using Stride.Core.Diagnostics;
 using Stride.Shaders.Parser.Mixins;
 using Stride.Graphics;
 using System.Linq;
+using System.IO;
 
 namespace GltfImport
 {
@@ -25,8 +26,10 @@ namespace GltfImport
             //fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/fox/Fox.gltf");
             // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/icosphere/icosphere.gltf");
             // var fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/Downloads/glTF/torus/torus.gltf");
-            fox_glb = SharpGLTF.Schema2.ModelRoot.Load("C:/Users/kafia/Documents/blender try/SimpleCube.gltf");
-            
+            //fox_glb = SharpGLTF.Schema2.ModelRoot.Load("C:/Users/kafia/Documents/blender try/SimpleCube.gltf");
+            //fox_glb = SharpGLTF.Schema2.ModelRoot.ReadGLB(File.OpenRead("D:/codeProj/xenproj/GltfImport/GltfImport/Resources/Fox.glb"));
+            fox_glb = SharpGLTF.Schema2.ModelRoot.Load("D:/codeProj/xenproj/GltfImport/GltfImport/Resources/FoxEmbedded.gltf");
+
         }
 
         public override void Update()

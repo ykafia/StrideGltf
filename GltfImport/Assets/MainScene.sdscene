@@ -38,7 +38,7 @@ Hierarchy:
                         Id: 74f619ae-de3d-44b7-a78d-ed8713c035d2
                         Position: {X: 0.0, Y: 1.0, Z: 0.0}
                         Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
-                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Scale: {X: 0.01, Y: 0.01, Z: 0.01}
                         Children: {}
                     dae32601a4e1ca9ac51491b39e4ef74a: !GltfImport.LoadGLTF,GltfImport
                         Id: b4a7b76d-aee7-4438-8af7-7187ec398e3d
@@ -61,9 +61,6 @@ Hierarchy:
                         Id: 284d280b-43d4-4b29-93cb-4e0ab6cdcafd
                         Model: d814901d-4642-4be9-8f23-5c6917411ce2:SimpleCube
                         Materials: {}
-                    bc394e054c8b794ab0769221633acaef: !GltfImport.DisplayBuffer,GltfImport
-                        Id: 83fbfa96-b9d6-4d9a-a396-78c6b45a73c0
-                        Number: 3
         -   Entity:
                 Id: a483ac4e-8859-4f66-9220-635288aabcab
                 Name: Directional light

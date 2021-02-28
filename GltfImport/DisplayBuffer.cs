@@ -23,6 +23,7 @@ namespace GltfImport
         public override void Update()
         {
             var model = this.Entity.Get<ModelComponent>();
+            //model.Skeleton.NodeTransformations[1].Transform.Rotation *= Quaternion.RotationY(5.0f * (float)Game.UpdateTime.Elapsed.TotalSeconds * 4.0f);
             //if (model!= null)
             //{
             //    var declaration = model.Model.Meshes[0].Draw.VertexBuffers.First().Declaration;

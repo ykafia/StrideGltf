@@ -9,10 +9,14 @@ using Stride.Rendering.Materials;
 using Stride.Rendering.Materials.ComputeColors;
 using System.IO;
 using Stride.Animations;
+using Stride.Core.Collections;
 
-namespace GltfImport
+using static GltfImport.GltfParser.GltfUtils;
+using static GltfImport.GltfParser.AnimationParser;
+
+namespace GltfImport.GltfParser
 {
-    class GltfParser
+    class GltfMeshParser
     {
 
         public static Model LoadFirstModel(GraphicsDevice device, SharpGLTF.Schema2.ModelRoot root)
@@ -31,47 +35,7 @@ namespace GltfImport
             return result;
         }
 
-        public static Skeleton ConvertSkeleton(SharpGLTF.Schema2.ModelRoot root)
-        {
-            Skeleton result = new Skeleton();
-            var skin = root.LogicalNodes.First(x => x.Mesh == root.LogicalMeshes.First()).Skin;
-            var jointList = Enumerable.Range(0, skin.JointsCount).Select(x => skin.GetJoint(x).Joint).ToList();
-            var mnd =
-                jointList
-                .Select(
-                    x =>
-                    new ModelNodeDefinition
-                    {
-                        Name = x.Name,
-                        Flags = ModelNodeFlags.Default,
-                        ParentIndex = jointList.IndexOf(x.VisualParent) + 1,
-                        Transform = new TransformTRS
-                        {
-                            Position = ConvertNumerics(x.LocalTransform.Translation),
-                            Rotation = ConvertNumerics(x.LocalTransform.Rotation),
-                            Scale = ConvertNumerics(x.LocalTransform.Scale)
-                        }
-
-                    }
-                )
-                .ToList();
-            mnd.Insert(
-                    0,
-                    new ModelNodeDefinition
-                    {
-                        Name = "Armature",
-                        Flags = ModelNodeFlags.EnableRender,
-                        ParentIndex = -1,
-                        Transform = new TransformTRS
-                        {
-                            Position = Vector3.Zero,
-                            Rotation = Quaternion.Identity,
-                            Scale = Vector3.Zero
-                        }
-                    });
-            result.Nodes = mnd.ToArray();
-            return result;
-        }
+        
         public static MeshSkinningDefinition ConvertInverseBindMatrices(SharpGLTF.Schema2.ModelRoot root)
         {
             var skin = root.LogicalNodes.First(x => x.Mesh == root.LogicalMeshes.First()).Skin;
@@ -84,7 +48,7 @@ namespace GltfImport
                             .Select((x, i) =>
                                 new MeshBoneDefinition
                                 {
-                                    NodeIndex = i+1,
+                                    NodeIndex = i + 1,
                                     LinkToMeshMatrix = ConvertNumerics(x.InverseBindMatrix)
                                 }
                             )
@@ -93,28 +57,26 @@ namespace GltfImport
             return mnt;
         }
 
-        public static List<AnimationClip> ConvertAnimations(SharpGLTF.Schema2.ModelRoot root)
+        public static Dictionary<string,AnimationClip> ConvertAnimations(SharpGLTF.Schema2.ModelRoot root)
         {
             var animations = root.LogicalAnimations;
+            
             var clips =
                 animations
                 .Select(x =>
                    {
                        //Create animation clip with 
-                       var clip = new AnimationClip { Duration = TimeSpan.FromSeconds(x.Duration) };
-                       // Add curves
-                       //x.Channels.Select(x => )
-                       //var (name, curve)= ConvertCurve(x.Channels);
-                       //clip.AddCurve(name,curve);
-                       return 1;
-                   }
-                );
-            return null;
-        }
+                       var clip = new AnimationClip { Duration = TimeSpan.FromSeconds(x.Duration)};
+                       clip.RepeatMode = AnimationRepeatMode.LoopInfinite;
+                       // Add Curve
+                       ConvertCurves(x.Channels,root).ToList().ForEach(x => clip.AddCurve(x.Key, x.Value));
 
-        private static (string,AnimationCurve) ConvertCurve(IReadOnlyList<SharpGLTF.Schema2.AnimationChannel> channels)
-        {
-            throw new NotImplementedException();
+                       return (x.Name,clip);
+                   }
+                )
+                .ToList()
+                .ToDictionary(x => x.Name, x => x.clip);
+            return clips;
         }
 
         public static List<Material> LoadMaterials(SharpGLTF.Schema2.ModelRoot root, GraphicsDevice device)
@@ -281,10 +243,10 @@ namespace GltfImport
 
         public static (VertexElement, int) ConvertVertexElement(KeyValuePair<string, SharpGLTF.Schema2.Accessor> accessor, int offset)
         {
-            
-            return (accessor.Key,accessor.Value.Format.ByteSize) switch
+
+            return (accessor.Key, accessor.Value.Format.ByteSize) switch
             {
-                ("POSITION",12) => (VertexElement.Position<Vector3>(0, offset), Vector3.SizeInBytes),
+                ("POSITION", 12) => (VertexElement.Position<Vector3>(0, offset), Vector3.SizeInBytes),
                 ("NORMAL", 12) => (VertexElement.Normal<Vector3>(0, offset), Vector3.SizeInBytes),
                 ("TANGENT", 12) => (VertexElement.Tangent<Vector3>(0, offset), Vector3.SizeInBytes),
                 ("COLOR", 16) => (VertexElement.Color<Vector4>(0, offset), Vector4.SizeInBytes),
@@ -300,7 +262,7 @@ namespace GltfImport
                 ("TEXCOORD_9", 8) => (VertexElement.TextureCoordinate<Vector2>(9, offset), Vector2.SizeInBytes),
                 ("JOINTS_0", 8) => (new VertexElement(VertexElementUsage.BlendIndices, 0, PixelFormat.R16G16B16A16_UInt, offset), 8),
                 ("JOINTS_0", 4) => (new VertexElement(VertexElementUsage.BlendIndices, 0, PixelFormat.R8G8B8A8_UInt, offset), 4),
-                ("WEIGHTS_0",16) => (new VertexElement(VertexElementUsage.BlendWeight, 0, PixelFormat.R32G32B32A32_Float, offset), Vector4.SizeInBytes),
+                ("WEIGHTS_0", 16) => (new VertexElement(VertexElementUsage.BlendWeight, 0, PixelFormat.R32G32B32A32_Float, offset), Vector4.SizeInBytes),
                 _ => throw new NotImplementedException(),
             };
         }
@@ -319,20 +281,7 @@ namespace GltfImport
                 _ => throw new NotImplementedException()
             };
         }
-        public static Matrix ConvertNumerics(System.Numerics.Matrix4x4 mat)
-        {
-            return new Matrix(
-                    mat.M11, mat.M12, mat.M13, mat.M14,
-                    mat.M21, mat.M22, mat.M23, mat.M24,
-                    mat.M31, mat.M32, mat.M33, mat.M34,
-                    mat.M41, mat.M42, mat.M43, mat.M44
-                );
-        }
-
-        public static Quaternion ConvertNumerics(System.Numerics.Quaternion v) => new Quaternion(v.X, v.Y, v.Z, v.W);
-        public static Vector4 ConvertNumerics(System.Numerics.Vector4 v) => new Vector4(v.X, v.Y, v.Z, v.W);
-        public static Vector3 ConvertNumerics(System.Numerics.Vector3 v) => new Vector3(v.X, v.Y, v.Z);
-        public static Vector2 ConvertNumerics(System.Numerics.Vector2 v) => new Vector2(v.X, v.Y);
         
+
     }
 }

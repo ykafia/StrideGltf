@@ -7,6 +7,7 @@ using Stride.Shaders.Parser.Mixins;
 using Stride.Graphics;
 using System.Linq;
 using System.IO;
+using GltfImport.GltfParser;
 
 namespace GltfImport
 {
@@ -37,12 +38,19 @@ namespace GltfImport
             
             if (!loaded) 
             {                
-                Entity.Add(new ModelComponent(GltfParser.LoadFirstModel(GraphicsDevice, fox_glb)));
+                Entity.Add(new ModelComponent(GltfMeshParser.LoadFirstModel(GraphicsDevice, fox_glb)));
+                var animCmp = Entity.GetOrCreate<AnimationComponent>();
+                var animations = GltfMeshParser.ConvertAnimations(fox_glb);
+                foreach(var anim in animations)
+                {
+                    animCmp.Animations.Add(anim.Key, anim.Value);
+                }
+                animCmp.Play("Run");
                 Log.Info("Model Loaded");
                 loaded = true;
             }
             DebugText.Print(Entity.Transform.Position.ToString(),new Int2(10,10));
-            //var model = Entity.Get<ModelComponent>();
+            //var model = Entity.Get<ModelComponent>().Materials[0].;
 
         }
 

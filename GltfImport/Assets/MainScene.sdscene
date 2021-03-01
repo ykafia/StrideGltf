@@ -12,6 +12,7 @@ Hierarchy:
         - ref!! b26a0e2a-f6e7-48bb-825d-9e33c47b685a
         - ref!! 888cc5d5-67ae-494e-84a0-a6fe8b3c22d6
         - ref!! 9dcb07df-7f46-4c10-bf5a-cd638f2dbdcb
+        - ref!! 7fb5cf64-ffc0-4d73-b879-ebc173124c9e
     Parts:
         -   Entity:
                 Id: 0f3848af-6033-437b-a2a6-a5111ef0fcc8
@@ -30,6 +31,30 @@ Hierarchy:
                         Id: ba58793c-063d-4f39-9920-ede12878635b
                         Type: !LightSkybox
                             Skybox: 92b4c0c9-e9fd-47e0-97cc-77af23e86976:Skybox
+        -   Entity:
+                Id: 7fb5cf64-ffc0-4d73-b879-ebc173124c9e
+                Name: Spot light
+                Components:
+                    76f191a45243abc88331b6603fda60ff: !TransformComponent
+                        Id: 66d2ff86-7345-4122-866b-6e595a726dc0
+                        Position: {X: 0.0, Y: 2.178736, Z: -3.01253724}
+                        Rotation: {X: -0.707106769, Y: 0.0, Z: 0.0, W: 0.707106769}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    b71068ba69d3f0c4dc8ad6fcd53e71ce: !LightComponent
+                        Id: 2d0c284e-3f4f-402c-88a9-700c7836d5ab
+                        Type: !LightSpot
+                            Color: !ColorRgbProvider
+                                Value: {R: 1.0, G: 1.0, B: 1.0}
+                            Range: 10.0
+                            UVScale: {X: 1.0, Y: 1.0}
+                            UVOffset: {X: 0.0, Y: 0.0}
+                            Shadow:
+                                BiasParameters:
+                                    DepthBias: 0.001
+                        Intensity: 10.0
+                    935667b88cfb59c90978108d908a10c2: !GltfImport.AnimationLight,GltfImport
+                        Id: 8bb65a40-b2cb-47c4-8eb3-341b7fb7779f
         -   Entity:
                 Id: 888cc5d5-67ae-494e-84a0-a6fe8b3c22d6
                 Name: fish
